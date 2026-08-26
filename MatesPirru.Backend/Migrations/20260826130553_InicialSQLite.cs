@@ -138,6 +138,8 @@ namespace MatesPirru.Backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "Usuarios");
+           
+
         }
     }
 }

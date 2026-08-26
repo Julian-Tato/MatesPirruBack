@@ -18,6 +18,9 @@ builder.Services.AddDbContext<MatesPirru.Backend.Data.AppDbContext>(options =>
 // Conectamos tu negocio de Productos
 builder.Services.AddScoped<IProductoService, ProductoService>();
 
+// conectamos al negocio de Categoria
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+
 var app = builder.Build();
 
 // Configuramos la página web de pruebas
@@ -29,6 +32,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapControllers();
+
+try
+{
+    app.MapControllers();
+}
+catch (System.Reflection.ReflectionTypeLoadException ex)
+{
+    foreach (var subEx in ex.LoaderExceptions)
+    {
+        // Esto va a imprimir en la consola el motivo real por el cual falla al cargar el controlador
+        Console.WriteLine($"---> ERROR DETALLADO: {subEx.Message}");
+    }
+    throw; // Vuelve a lanzar la excepción para mostrar el error exacto
+}
 
 app.Run();
