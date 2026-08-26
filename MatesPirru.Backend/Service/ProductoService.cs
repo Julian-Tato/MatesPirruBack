@@ -34,5 +34,53 @@ namespace MatesPirru.Backend.Services
 
             return nuevoProducto;
         }
+
+        // 1. BUSCAR POR ID(Reemplaza al "SELECT * FROM Productos WHERE Id = X")
+        public async Task<Producto?> ObtenerPorIdAsync(int id)
+        {
+            // FindAsync va directo a buscar por la Clave Primaria (Id). Es súper rápido.
+            return await _context.Productos.FindAsync(id);
+        }
+
+        // 2. ACTUALIZAR (Reemplaza al "UPDATE Productos SET Nombre = '...', Precio = '...' WHERE Id = X")
+        public async Task<Producto> ActualizarProductoAsync(int id, Producto productoModificado)
+        {
+            // Primero, buscamos el mate original en la base de datos
+            var productoExistente = await _context.Productos.FindAsync(id);
+
+            // Si no existe, cortamos acá
+            if (productoExistente == null)
+                throw new Exception("El producto que intentás modificar no existe.");
+
+            // LA MAGIA DE EF CORE (Tracking):
+            // Como sacamos "productoExistente" de la base de datos, EF Core lo está "vigilando".
+            // Si nosotros le cambiamos los valores acá, EF Core se da cuenta solito de qué columnas cambiaron.
+            productoExistente.Nombre = productoModificado.Nombre;
+            productoExistente.Descripcion = productoModificado.Descripcion;
+            productoExistente.Precio = productoModificado.Precio;
+            productoExistente.Stock = productoModificado.Stock;
+            productoExistente.IdCategoria = productoModificado.IdCategoria;
+
+            // Al hacer SaveChanges, EF Core arma el código "UPDATE..." solo con los campos que tocamos.
+            await _context.SaveChangesAsync();
+
+            return productoExistente;
+        }
+
+        // 3. ELIMINAR (Reemplaza al "DELETE FROM Productos WHERE Id = X")
+        public async Task<bool> EliminarProductoAsync(int id)
+        {
+            // Buscamos si existe
+            var productoExistente = await _context.Productos.FindAsync(id);
+            if (productoExistente == null) return false; // No lo encontró
+
+            // Le decimos a EF Core: "Marcá este objeto para ser destruido"
+            _context.Productos.Remove(productoExistente);
+
+            // Al guardar, EF Core ejecuta el DELETE en SQLite.
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
