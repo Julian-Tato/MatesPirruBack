@@ -95,7 +95,7 @@ namespace MatesPirru.Backend.Services
             if (productoExistente == null) return false; // No lo encontró
 
             // Le decimos a EF Core: "Marcá este objeto para ser destruido"
-            _context.Productos.Remove(productoExistente);
+            productoExistente.Activo = false;
 
             // Al guardar, EF Core ejecuta el DELETE en SQLite.
             await _context.SaveChangesAsync();

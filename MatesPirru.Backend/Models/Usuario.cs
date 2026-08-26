@@ -8,14 +8,14 @@
     public class Usuario
     {
         public int Id { get; set; }
-        public int IdGoogle { get; set; }
+        public string IdGoogle { get; set; } = string.Empty;
         public string NombreApellido { get; set; } = string.Empty;
         public DateTime FechaNacimiento { get; set; }
         public string Email { get; set; } = string.Empty;
-        public int Telefono { get; set; }
+        public string Telefono { get; set; } = string.Empty;
         public RolUsuario Rol { get; set; }
         public string Direccion { get; set; } = string.Empty;
-        public bool Estado { get; set; } = true;
+        public bool Activo { get; set; } = true;
 
     }
 }
