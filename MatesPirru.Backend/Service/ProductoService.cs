@@ -55,11 +55,31 @@ namespace MatesPirru.Backend.Services
             // LA MAGIA DE EF CORE (Tracking):
             // Como sacamos "productoExistente" de la base de datos, EF Core lo está "vigilando".
             // Si nosotros le cambiamos los valores acá, EF Core se da cuenta solito de qué columnas cambiaron.
-            productoExistente.Nombre = productoModificado.Nombre;
-            productoExistente.Descripcion = productoModificado.Descripcion;
-            productoExistente.Precio = productoModificado.Precio;
-            productoExistente.Stock = productoModificado.Stock;
+            // Le decimos: "Si me mandaron un nombre que no esté vacío, actualizalo. Si no, dejá el que estaba."
+            if (!string.IsNullOrEmpty(productoModificado.Nombre))
+                productoExistente.Nombre = productoModificado.Nombre;
+
+            if (!string.IsNullOrEmpty(productoModificado.Descripcion))
+                productoExistente.Descripcion = productoModificado.Descripcion;
+
+            if (!string.IsNullOrEmpty(productoModificado.Modelo))
+                productoExistente.Modelo = productoModificado.Modelo;
+
+            if (!string.IsNullOrEmpty(productoModificado.UrlImagen))
+                productoExistente.UrlImagen = productoModificado.UrlImagen;
+
+            if (!string.IsNullOrEmpty(productoModificado.Material))
+                productoExistente.Material = productoModificado.Material;
+
+            if (productoModificado.Precio > 0)
+                productoExistente.Precio = productoModificado.Precio;
+            // Solo actualiza el stock si nos mandaron algo (asumimos que puede llegar a 0)
+            // Nota: para hacer esto perfecto en el futuro, se suelen usar atributos anulables (int?) en los modelos.
+            if (productoModificado.Stock != 0)
+                productoExistente.Stock = productoModificado.Stock;
+
             productoExistente.IdCategoria = productoModificado.IdCategoria;
+            productoExistente.Activo = productoModificado.Activo;
 
             // Al hacer SaveChanges, EF Core arma el código "UPDATE..." solo con los campos que tocamos.
             await _context.SaveChangesAsync();
