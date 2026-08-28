@@ -17,9 +17,10 @@ builder.Services.AddDbContext<MatesPirru.Backend.Data.AppDbContext>(options =>
 
 // Conectamos tu negocio de Productos
 builder.Services.AddScoped<IProductoService, ProductoService>();
-
 // conectamos al negocio de Categoria
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+// conectamos al negocio de Usuarios
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
 var app = builder.Build();
 
