@@ -18,7 +18,10 @@ namespace MatesPirru.Backend.Services
         public async Task<List<Producto>> ObtenerTodosAsync()
         {
             // Devuelve todos los productos que estén activos
-            return await _context.Productos.Where(p => p.Activo == true).ToListAsync();
+            return await _context.Productos
+                .Include(p => p.Categoria) // <-- Acá le decimos que adjunte la categoría
+                .Where(p => p.Activo == true)
+                .ToListAsync();
         }
 
         public async Task<Producto> CrearProductoAsync(Producto nuevoProducto)
@@ -39,7 +42,9 @@ namespace MatesPirru.Backend.Services
         public async Task<Producto?> ObtenerPorIdAsync(int id)
         {
             // FindAsync va directo a buscar por la Clave Primaria (Id). Es súper rápido.
-            return await _context.Productos.FindAsync(id);
+            return await _context.Productos
+                .Include(p => p.Categoria) // <-- Acá también
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         // 2. ACTUALIZAR (Reemplaza al "UPDATE Productos SET Nombre = '...', Precio = '...' WHERE Id = X")

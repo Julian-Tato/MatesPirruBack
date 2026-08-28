@@ -1,4 +1,5 @@
-﻿namespace MatesPirru.Backend.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+namespace MatesPirru.Backend.Models
 {
     public class Producto
     {
@@ -12,5 +13,8 @@
         public decimal Precio { get; set; }
         public int IdCategoria { get; set; }
         public bool Activo { get; set; } = true;
+
+        [ForeignKey("IdCategoria")]
+        public Categoria? Categoria { get; set; }
     }
 }
