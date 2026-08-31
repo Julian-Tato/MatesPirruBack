@@ -32,6 +32,12 @@ namespace MatesPirru.Backend.Services
             if (string.IsNullOrWhiteSpace(nuevoUsuario.Email))
                 throw new ArgumentException("El email es obligatorio para registrar un usuario.");
 
+            // Pasamos la clave por la licuadora antes de guardar
+            if (!string.IsNullOrWhiteSpace(nuevoUsuario.Password))
+            {
+                nuevoUsuario.Password = BCrypt.Net.BCrypt.HashPassword(nuevoUsuario.Password);
+            }
+
             _context.Usuarios.Add(nuevoUsuario);
             await _context.SaveChangesAsync();
             return nuevoUsuario;
@@ -61,6 +67,12 @@ namespace MatesPirru.Backend.Services
             if (!string.IsNullOrEmpty(usuarioModificado.IdGoogle))
                 usuarioExistente.IdGoogle = usuarioModificado.IdGoogle;
 
+            if (!string.IsNullOrEmpty(usuarioModificado.Password))
+            {
+                // Si manda una clave nueva, también la licuamos antes de pisar la vieja
+                usuarioExistente.Password = BCrypt.Net.BCrypt.HashPassword(usuarioModificado.Password);
+            }
+
             // Fechas: Chequeamos que la fecha no sea la que viene por defecto (0001-01-01)
             if (usuarioModificado.FechaNacimiento != default)
                 usuarioExistente.FechaNacimiento = usuarioModificado.FechaNacimiento;
@@ -86,6 +98,28 @@ namespace MatesPirru.Backend.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<Usuario?> ValidarCredencialesAsync(string email, string password)
+        {
+            // 1. Buscamos al usuario SOLO por su email
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Email == email && u.Activo == true);
+
+            // 2. Si no existe, o si la clave que intentó poner no coincide con el hash guardado, lo rebotamos
+            if (usuario == null || !BCrypt.Net.BCrypt.Verify(password, usuario.Password))
+            {
+                return null;
+            }
+
+            // 3. Si pasa la verificación de BCrypt, es él.
+            return usuario;
+        }
+
+        public async Task<Usuario?> ObtenerPorEmailAsync(string email)
+        {
+            return await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Email == email && u.Activo == true);
         }
     }
 }

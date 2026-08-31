@@ -9,6 +9,7 @@ namespace MatesPirru.Backend.Services
 
         // Busca un usuario puntual por su ID
         Task<Usuario?> ObtenerPorIdAsync(int id);
+        Task<Usuario?> ObtenerPorEmailAsync(string email);
 
         // Crea un usuario nuevo
         Task<Usuario> CrearUsuarioAsync(Usuario nuevoUsuario);
@@ -18,5 +19,10 @@ namespace MatesPirru.Backend.Services
 
         // Apaga un usuario (Borrado Lógico)
         Task<bool> EliminarUsuarioAsync(int id);
+
+        // Devuelve el usuario si acierta, o "null" si le erró a la clave/email
+        Task<Usuario?> ValidarCredencialesAsync(string email, string password);
+
+        
     }
 }

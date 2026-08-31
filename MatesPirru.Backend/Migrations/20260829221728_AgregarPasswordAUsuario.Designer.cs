@@ -3,6 +3,7 @@ using System;
 using MatesPirru.Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MatesPirru.Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260829221728_AgregarPasswordAUsuario")]
+    partial class AgregarPasswordAUsuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -55,10 +58,6 @@ namespace MatesPirru.Backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdPedido");
-
-                    b.HasIndex("IdProducto");
-
                     b.ToTable("DetallesPedido");
                 });
 
@@ -97,20 +96,14 @@ namespace MatesPirru.Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("CostoEnvio")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DireccionEnvio")
+                    b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("IdCupon")
+                    b.Property<int>("IdCupon")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("IdUsuario")
@@ -123,8 +116,6 @@ namespace MatesPirru.Backend.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdUsuario");
 
                     b.ToTable("Pedidos");
                 });
@@ -218,36 +209,6 @@ namespace MatesPirru.Backend.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("MatesPirru.Backend.Models.DetallePedido", b =>
-                {
-                    b.HasOne("MatesPirru.Backend.Models.Pedido", "Pedido")
-                        .WithMany("Detalles")
-                        .HasForeignKey("IdPedido")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MatesPirru.Backend.Models.Producto", "Producto")
-                        .WithMany()
-                        .HasForeignKey("IdProducto")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pedido");
-
-                    b.Navigation("Producto");
-                });
-
-            modelBuilder.Entity("MatesPirru.Backend.Models.Pedido", b =>
-                {
-                    b.HasOne("MatesPirru.Backend.Models.Usuario", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("MatesPirru.Backend.Models.Producto", b =>
                 {
                     b.HasOne("MatesPirru.Backend.Models.Categoria", "Categoria")
@@ -257,11 +218,6 @@ namespace MatesPirru.Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Categoria");
-                });
-
-            modelBuilder.Entity("MatesPirru.Backend.Models.Pedido", b =>
-                {
-                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }

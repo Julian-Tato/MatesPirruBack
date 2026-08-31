@@ -1,13 +1,20 @@
 using MatesPirru.Backend.Service;
 using MatesPirru.Backend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore; // <-- Agregamos la librería de Scalar
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregamos los recepcionistas (Controllers)
-builder.Services.AddControllers();
-
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 // Agregamos el generador de la API (Nativo de .NET 9)
 builder.Services.AddOpenApi();
 
@@ -21,6 +28,26 @@ builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 // conectamos al negocio de Usuarios
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+// conectamos al negocio de Pedido
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+
+// PAra los tocken de los usuarios.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true, // Controla que el token no esté vencido
+            ValidateIssuerSigningKey = true, // Exige que esté firmado con nuestra llave
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            RoleClaimType = ClaimTypes.Role // <-- AGREGAR ESTA LÍNEA MÁGICA
+
+        };
+    });
 
 var app = builder.Build();
 
@@ -32,6 +59,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
 try

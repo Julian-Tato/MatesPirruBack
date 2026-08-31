@@ -2,6 +2,7 @@
 using MatesPirru.Backend.Service;
 using MatesPirru.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MatesPirru.Backend.Controllers
 {
@@ -26,6 +27,18 @@ namespace MatesPirru.Backend.Controllers
             return Ok(productos); // Devuelve un código 200 (Éxito) con la lista
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProducto(int id)
+        {
+            var producto = await _productoService.ObtenerPorIdAsync(id);
+
+            if (producto == null)
+                return NotFound(new { mensaje = "El mate no existe." }); // Devuelve código 404 (No encontrado)
+
+            return Ok(producto); // Devuelve código 200 con los datos del mate
+        }
+
+        [Authorize(Roles = "Admin")]
         // POST: api/productos (Para crear un mate nuevo)
         [HttpPost]
         public async Task<IActionResult> CrearProducto([FromBody] Producto nuevoProducto)
@@ -45,17 +58,9 @@ namespace MatesPirru.Backend.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProducto(int id)
-        {
-            var producto = await _productoService.ObtenerPorIdAsync(id);
+       
 
-            if (producto == null)
-                return NotFound(new { mensaje = "El mate no existe." }); // Devuelve código 404 (No encontrado)
-
-            return Ok(producto); // Devuelve código 200 con los datos del mate
-        }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarProducto(int id, [FromBody] Producto productoModificado)
         {
@@ -70,6 +75,7 @@ namespace MatesPirru.Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarProducto(int id)
         {
