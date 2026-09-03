@@ -24,10 +24,13 @@ builder.Services.AddDbContext<MatesPirru.Backend.Data.AppDbContext>(options =>
 
 // Conectamos tu negocio de Productos
 builder.Services.AddScoped<IProductoService, ProductoService>();
+
 // conectamos al negocio de Categoria
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+
 // conectamos al negocio de Usuarios
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
 // conectamos al negocio de Pedido
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 
@@ -64,8 +67,8 @@ var app = builder.Build();
 // Configuramos la página web de pruebas
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); // Genera los datos en segundo plano
-    app.MapScalarApiReference(); // <-- Dibuja la nueva interfaz web moderna
+    app.MapOpenApi(); 
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
