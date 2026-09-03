@@ -26,6 +26,7 @@ namespace MatesPirru.Backend.Service
                 CostoEnvio = 0 // A futuro podés calcularlo según el código postal
             };
 
+
             // 2. Analizamos cada renglón del carrito
             foreach (var item in pedidoData.Detalles)
             {
@@ -64,6 +65,13 @@ namespace MatesPirru.Backend.Service
             return nuevoPedido;
         }
 
+        public async Task<Pedido> ObtenerPedidoPorId(int id)
+        {
+            // El .Include va a buscar el objeto entero del Usuario asociado a la clave foránea
+            return await _context.Pedidos
+                .Include(p => p.Usuario)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
         public async Task<List<Pedido>> ObtenerPedidosPorUsuarioAsync(int idUsuario)
         {
             // Traemos los pedidos de la persona, incluyendo los detalles y el nombre de cada mate
@@ -73,6 +81,43 @@ namespace MatesPirru.Backend.Service
                 .Where(p => p.IdUsuario == idUsuario)
                 .OrderByDescending(p => p.Fecha) // Los más recientes primero
                 .ToListAsync();
+        }
+
+        public async Task<Pedido> ActualizarPedido(int id, Pedido pedidoActualizado)
+        {
+            var pedidoExistente = await _context.Pedidos.FindAsync(id);
+
+            if (pedidoExistente == null) return null;
+
+            // Actualizamos la dirección solo si el usuario nos mandó un texto válido
+            if (!string.IsNullOrWhiteSpace(pedidoActualizado.DireccionEnvio))
+            {
+                pedidoExistente.DireccionEnvio = pedidoActualizado.DireccionEnvio;
+            }
+
+            // Si el día de mañana querés que también puedan cambiar el estado desde otra pantalla, 
+            // podés ir sumando reglas acá, por ejemplo:
+            // pedidoExistente.Estado = pedidoActualizado.Estado;
+
+            // Guardamos los cambios. EF Core es inteligente y solo va a hacer un UPDATE 
+            // en la base de datos de la columna "DireccionEnvio".
+            await _context.SaveChangesAsync();
+
+            return pedidoExistente;
+        }
+
+        public async Task<bool> EliminarPedido(int id)
+        {
+            var pedido = await _context.Pedidos.FindAsync(id);
+
+            if (pedido == null) return false;
+
+            // Borrado lógico: simplemente le cambiamos el estado al pedido
+            pedido.Estado = EstadoPedido.Cancelado;
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

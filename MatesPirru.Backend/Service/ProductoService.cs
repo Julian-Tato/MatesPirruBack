@@ -1,4 +1,5 @@
 ﻿using MatesPirru.Backend.Data;
+using MatesPirru.Backend.DTOs;
 using MatesPirru.Backend.Models;
 using MatesPirru.Backend.Service;
 using Microsoft.EntityFrameworkCore;
@@ -106,6 +107,30 @@ namespace MatesPirru.Backend.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<RespuestaPaginada<Producto>> ObtenerProductosPaginados(int pagina, int cantidadPorPagina)
+        {
+            // 1. Contamos cuántos productos existen en total
+            var totalItems = await _context.Productos.CountAsync();
+
+            // 2. Calculamos el total de páginas (ej: 12 mates / 5 por página = 3 páginas)
+            var totalPaginas = (int)Math.Ceiling(totalItems / (double)cantidadPorPagina);
+
+            // 3. Buscamos solo los mates que corresponden a esta página
+            var items = await _context.Productos
+                .Skip((pagina - 1) * cantidadPorPagina) // Salteamos los que ya pasaron
+                .Take(cantidadPorPagina) // Agarramos los de esta página
+                .ToListAsync();
+
+            // 4. Armamos el paquete y lo devolvemos
+            return new RespuestaPaginada<Producto>
+            {
+                Items = items,
+                PaginaActual = pagina,
+                TotalPaginas = totalPaginas,
+                TotalItems = totalItems
+            };
         }
     }
 }

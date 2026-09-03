@@ -1,8 +1,9 @@
-﻿using MatesPirru.Backend.Models;
+﻿using MatesPirru.Backend.DTOs;
+using MatesPirru.Backend.Models;
 using MatesPirru.Backend.Service;
 using MatesPirru.Backend.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MatesPirru.Backend.Controllers
 {
@@ -58,7 +59,7 @@ namespace MatesPirru.Backend.Controllers
             }
         }
 
-       
+
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
@@ -88,5 +89,22 @@ namespace MatesPirru.Backend.Controllers
             // "La orden se cumplió con éxito (lo borré), pero no tengo nada para mostrarte en pantalla".
             return NoContent();
         }
+
+        [HttpGet("paginados")]
+        public async Task<ActionResult<RespuestaPaginada<Producto>>> GetProductosPaginados(
+        [FromQuery] int pagina = 1,
+        [FromQuery] int cantidad = 10)
+        {
+            // Evitamos que pidan páginas negativas o 0
+            if (pagina < 1) pagina = 1;
+            if (cantidad < 1) cantidad = 10;
+
+            var resultado = await _productoService.ObtenerProductosPaginados(pagina, cantidad);
+            return Ok(resultado);
+        }
+
     }
 }
+
+    
+    

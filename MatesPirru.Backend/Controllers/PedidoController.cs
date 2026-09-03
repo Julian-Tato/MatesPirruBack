@@ -51,5 +51,40 @@ namespace MatesPirru.Backend.Controllers
             var misPedidos = await _pedidoService.ObtenerPedidosPorUsuarioAsync(usuarioId);
             return Ok(misPedidos);
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Pedido>> GetPedido(int id)
+        {
+            var pedido = await _pedidoService.ObtenerPedidoPorId(id);
+
+            if (pedido == null) return NotFound(new { mensaje = "El pedido no fue encontrado." });
+
+            return Ok(pedido);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Pedido>> PutPedido(int id, [FromBody] Pedido pedidoActualizado)
+        {
+            // Medida de seguridad básica: verificar que no intenten pisar el ID equivocado
+            if (id != pedidoActualizado.Id)
+                return BadRequest(new { mensaje = "El ID de la URL no coincide con el del cuerpo." });
+
+            var pedido = await _pedidoService.ActualizarPedido(id, pedidoActualizado);
+
+            if (pedido == null) return NotFound(new { mensaje = "El pedido a modificar no existe." });
+
+            return Ok(pedido);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeletePedido(int id)
+        {
+            var exito = await _pedidoService.EliminarPedido(id);
+
+            if (!exito) return NotFound(new { mensaje = "El pedido que intentás borrar no existe." });
+
+            // 204 NoContent es la respuesta estándar de éxito universal cuando se elimina un recurso
+            return NoContent();
+        }
     }
 }
