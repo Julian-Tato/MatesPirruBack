@@ -91,6 +91,7 @@ namespace MatesPirru.Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         // 4. PUT: api/usuarios/5 (Actualiza)
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] Usuario usuarioModificado)
@@ -107,6 +108,7 @@ namespace MatesPirru.Backend.Controllers
         }
 
         // 5. DELETE: api/usuarios/5 (Apaga el usuario lógicamente)
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarUsuario(int id)
         {
