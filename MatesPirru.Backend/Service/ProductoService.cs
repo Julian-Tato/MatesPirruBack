@@ -17,24 +17,19 @@ namespace MatesPirru.Backend.Services
 
         public async Task<List<Producto>> ObtenerTodosAsync(bool? activo = true)
         {
-<<<<<<< HEAD
-            // Devuelve todos los productos junto a su categoría y sus imágenes
-            return await _context.Productos
+            // 1. Preparamos la consulta sumando la Categoría y las Imágenes de tu compañero
+            var query = _context.Productos
                 .Include(p => p.Categoria)
                 .Include(p => p.Imagenes)
-                .Where(p => p.Activo == true)
-                .ToListAsync();
-=======
-            var query = _context.Productos.Include(p => p.Categoria).AsQueryable();
+                .AsQueryable();
 
-            // Si pasamos true o false, filtra. Si pasamos 'null' (desde el Admin), trae TODOS.
+            // 2. Aplicamos NUESTRA lógica para el panel de administración
             if (activo.HasValue)
             {
                 query = query.Where(p => p.Activo == activo.Value);
             }
 
             return await query.ToListAsync();
->>>>>>> 6cd5b084f058b6bc47f9a25952d93fa33303ca4b
         }
 
         public async Task<Producto> CrearProductoAsync(Producto nuevoProducto)
