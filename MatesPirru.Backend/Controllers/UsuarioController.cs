@@ -91,7 +91,7 @@ namespace MatesPirru.Backend.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+     //   [Authorize(Roles = "Admin")] 
         // 4. PUT: api/usuarios/5 (Actualiza)
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] Usuario usuarioModificado)
@@ -315,5 +315,6 @@ namespace MatesPirru.Backend.Controllers
                 return BadRequest(new { mensaje = ex.Message });
             }
         }
+        
     }
 }

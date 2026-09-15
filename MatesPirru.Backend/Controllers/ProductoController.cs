@@ -45,10 +45,10 @@ namespace MatesPirru.Backend.Controllers
         {
             try
             {
-                // Le pasamos el paquete armado al cocinero
+                // Le pasamos el paquete armado 
                 var productoCreado = await _productoService.CrearProductoAsync(nuevoProducto);
 
-                // Devuelve un código 201 (Creado) y muestra el producto que se guardó
+                // Devuelve un código 201/200 y muestra el producto que se guardó
                 return Ok(productoCreado);
             }
             catch (ArgumentException ex)
@@ -57,8 +57,6 @@ namespace MatesPirru.Backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-       
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
@@ -84,8 +82,8 @@ namespace MatesPirru.Backend.Controllers
             if (!exito)
                 return NotFound(new { mensaje = "No se encontró el mate para eliminar." });
 
-            // Devuelve código 204 (No Content). En internet, esto significa: 
-            // "La orden se cumplió con éxito (lo borré), pero no tengo nada para mostrarte en pantalla".
+            // Devuelve código 204 (No Content). 
+            
             return NoContent();
         }
     }

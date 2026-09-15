@@ -8,6 +8,9 @@ namespace MatesPirru.Backend.Data
         // Constructor necesario para que SQLite se conecte
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        // Guardamos todas las fotos extras para los mates
+        public DbSet<ImagenProducto> ImagenesProducto => Set<ImagenProducto>();
+
         // Mapeo de todas tus tablas (Modelos) a la base de datos
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Producto> Productos { get; set; }

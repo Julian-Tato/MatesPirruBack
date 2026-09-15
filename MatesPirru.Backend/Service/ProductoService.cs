@@ -17,9 +17,10 @@ namespace MatesPirru.Backend.Services
 
         public async Task<List<Producto>> ObtenerTodosAsync()
         {
-            // Devuelve todos los productos que estén activos
+            // Devuelve todos los productos junto a su categoría y sus imágenes
             return await _context.Productos
-                .Include(p => p.Categoria) // <-- Acá le decimos que adjunte la categoría
+                .Include(p => p.Categoria)
+                .Include(p => p.Imagenes)
                 .Where(p => p.Activo == true)
                 .ToListAsync();
         }
@@ -38,29 +39,27 @@ namespace MatesPirru.Backend.Services
             return nuevoProducto;
         }
 
-        // 1. BUSCAR POR ID(Reemplaza al "SELECT * FROM Productos WHERE Id = X")
+        // 1. BUSCAR POR ID
         public async Task<Producto?> ObtenerPorIdAsync(int id)
         {
-            // FindAsync va directo a buscar por la Clave Primaria (Id). Es súper rápido.
             return await _context.Productos
-                .Include(p => p.Categoria) // <-- Acá también
+                .Include(p => p.Categoria)
+                .Include(p => p.Imagenes)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        // 2. ACTUALIZAR (Reemplaza al "UPDATE Productos SET Nombre = '...', Precio = '...' WHERE Id = X")
+        // 2. ACTUALIZAR
+        // 2. ACTUALIZAR
         public async Task<Producto> ActualizarProductoAsync(int id, Producto productoModificado)
         {
-            // Primero, buscamos el mate original en la base de datos
-            var productoExistente = await _context.Productos.FindAsync(id);
+            // Traemos el producto incluyendo las imágenes para poder modificarlas si cambian
+            var productoExistente = await _context.Productos
+                .Include(p => p.Imagenes)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-            // Si no existe, cortamos acá
             if (productoExistente == null)
                 throw new Exception("El producto que intentás modificar no existe.");
 
-            // LA MAGIA DE EF CORE (Tracking):
-            // Como sacamos "productoExistente" de la base de datos, EF Core lo está "vigilando".
-            // Si nosotros le cambiamos los valores acá, EF Core se da cuenta solito de qué columnas cambiaron.
-            // Le decimos: "Si me mandaron un nombre que no esté vacío, actualizalo. Si no, dejá el que estaba."
             if (!string.IsNullOrEmpty(productoModificado.Nombre))
                 productoExistente.Nombre = productoModificado.Nombre;
 
@@ -70,39 +69,40 @@ namespace MatesPirru.Backend.Services
             if (!string.IsNullOrEmpty(productoModificado.Modelo))
                 productoExistente.Modelo = productoModificado.Modelo;
 
-            if (!string.IsNullOrEmpty(productoModificado.UrlImagen))
-                productoExistente.UrlImagen = productoModificado.UrlImagen;
-
             if (!string.IsNullOrEmpty(productoModificado.Material))
                 productoExistente.Material = productoModificado.Material;
 
             if (productoModificado.Precio > 0)
                 productoExistente.Precio = productoModificado.Precio;
-            // Solo actualiza el stock si nos mandaron algo (asumimos que puede llegar a 0)
-            // Nota: para hacer esto perfecto en el futuro, se suelen usar atributos anulables (int?) en los modelos.
+
             if (productoModificado.Stock != 0)
                 productoExistente.Stock = productoModificado.Stock;
 
             productoExistente.IdCategoria = productoModificado.IdCategoria;
             productoExistente.Activo = productoModificado.Activo;
 
-            // Al hacer SaveChanges, EF Core arma el código "UPDATE..." solo con los campos que tocamos.
+            // Sincronización de imágenes si el JSON del PUT trae nuevas
+            if (productoModificado.Imagenes != null && productoModificado.Imagenes.Any())
+            {
+                // Usamos RemoveRange directo del contexto sin especificar DbSet
+                _context.RemoveRange(productoExistente.Imagenes);
+                productoExistente.Imagenes = productoModificado.Imagenes;
+            }
+
             await _context.SaveChangesAsync();
 
-            return productoExistente;
+            // Retornamos el producto con las relaciones recargadas para el frontend
+            return await ObtenerPorIdAsync(id);
         }
 
-        // 3. ELIMINAR (Reemplaza al "DELETE FROM Productos WHERE Id = X")
+        // 3. ELIMINAR
         public async Task<bool> EliminarProductoAsync(int id)
         {
-            // Buscamos si existe
             var productoExistente = await _context.Productos.FindAsync(id);
-            if (productoExistente == null) return false; // No lo encontró
+            if (productoExistente == null) return false;
 
-            // Le decimos a EF Core: "Marcá este objeto para ser destruido"
             productoExistente.Activo = false;
 
-            // Al guardar, EF Core ejecuta el DELETE en SQLite.
             await _context.SaveChangesAsync();
 
             return true;

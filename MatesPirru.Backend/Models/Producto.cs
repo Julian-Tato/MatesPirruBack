@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MatesPirru.Backend.Models
 {
     public class Producto
@@ -8,7 +9,6 @@ namespace MatesPirru.Backend.Models
         public string Descripcion { get; set; } = string.Empty;
         public string Modelo { get; set; } = string.Empty;
         public int Stock { get; set; }
-        public string UrlImagen { get; set; } = string.Empty;
         public string Material { get; set; } = string.Empty;
         public decimal Precio { get; set; }
         public int IdCategoria { get; set; }
@@ -16,5 +16,8 @@ namespace MatesPirru.Backend.Models
 
         [ForeignKey("IdCategoria")]
         public Categoria? Categoria { get; set; }
+
+        // Relación de Uno a Muchos con las imágenes de Postimages
+        public List<ImagenProducto> Imagenes { get; set; } = new();
     }
 }

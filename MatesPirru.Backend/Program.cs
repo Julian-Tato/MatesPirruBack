@@ -3,38 +3,33 @@ using MatesPirru.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Scalar.AspNetCore; // <-- Agregamos la librería de Scalar
+using Scalar.AspNetCore;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregamos los recepcionistas (Controllers)
+// Agregamos los recepcionistas (Controllers) y manejamos ciclos de referencias
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
-// Agregamos el generador de la API (Nativo de .NET 9)
+
+// Generador de la API (Nativo de .NET 9)
 builder.Services.AddOpenApi();
 
-// Conectamos la base de datos
+// Conectamos la base de datos SQLite
 builder.Services.AddDbContext<MatesPirru.Backend.Data.AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("ConexionSQL")));
 
-// Conectamos tu negocio de Productos
+// Inyección de dependencias de los servicios
 builder.Services.AddScoped<IProductoService, ProductoService>();
-
-// conectamos al negocio de Categoria
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
-
-// conectamos al negocio de Usuarios
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-
-// conectamos al negocio de Pedido
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 
-// PAra los tocken de los usuarios.
+// Configuración de Autenticación JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -42,16 +37,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = true, // Controla que el token no esté vencido
-            ValidateIssuerSigningKey = true, // Exige que esté firmado con nuestra llave
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-            RoleClaimType = ClaimTypes.Role // <-- AGREGAR ESTA LÍNEA MÁGICA
-
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
+// Configuración de CORS para React
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirReact", app =>
@@ -64,10 +59,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configuramos la página web de pruebas
+// Interfaz visual de documentación moderna (Scalar) en entorno de desarrollo
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); 
+    app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
@@ -84,10 +79,9 @@ catch (System.Reflection.ReflectionTypeLoadException ex)
 {
     foreach (var subEx in ex.LoaderExceptions)
     {
-        // Esto va a imprimir en la consola el motivo real por el cual falla al cargar el controlador
         Console.WriteLine($"---> ERROR DETALLADO: {subEx.Message}");
     }
-    throw; // Vuelve a lanzar la excepción para mostrar el error exacto
+    throw;
 }
 
 app.Run();
