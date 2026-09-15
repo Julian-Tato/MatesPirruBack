@@ -21,10 +21,11 @@ namespace MatesPirru.Backend.Controllers
 
         // GET: api/productos (Para ver todos los mates)
         [HttpGet]
-        public async Task<IActionResult> GetProductos()
+        public async Task<IActionResult> GetProductos([FromQuery] bool? activo = true)
         {
-            var productos = await _productoService.ObtenerTodosAsync();
-            return Ok(productos); // Devuelve un código 200 (Éxito) con la lista
+            // Le pasamos el filtro al servicio
+            var productos = await _productoService.ObtenerTodosAsync(activo);
+            return Ok(productos);
         }
 
         [HttpGet("{id}")]

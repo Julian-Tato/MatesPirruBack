@@ -15,13 +15,17 @@ namespace MatesPirru.Backend.Services
             _context = context;
         }
 
-        public async Task<List<Producto>> ObtenerTodosAsync()
+        public async Task<List<Producto>> ObtenerTodosAsync(bool? activo = true)
         {
-            // Devuelve todos los productos que estén activos
-            return await _context.Productos
-                .Include(p => p.Categoria) // <-- Acá le decimos que adjunte la categoría
-                .Where(p => p.Activo == true)
-                .ToListAsync();
+            var query = _context.Productos.Include(p => p.Categoria).AsQueryable();
+
+            // Si pasamos true o false, filtra. Si pasamos 'null' (desde el Admin), trae TODOS.
+            if (activo.HasValue)
+            {
+                query = query.Where(p => p.Activo == activo.Value);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<Producto> CrearProductoAsync(Producto nuevoProducto)
