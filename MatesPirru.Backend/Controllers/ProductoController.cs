@@ -28,7 +28,16 @@ namespace MatesPirru.Backend.Controllers
             return Ok(productos);
         }
 
-        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")] // Protegemos el inventario total
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetProductosAdmin()
+        {
+            // Al pasarle 'null' explícitamente, el servicio ignora el filtro y trae TODOS
+            var productos = await _productoService.ObtenerTodosAsync(null);
+            return Ok(productos);
+        }
+
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetProducto(int id)
         {
             var producto = await _productoService.ObtenerPorIdAsync(id);
