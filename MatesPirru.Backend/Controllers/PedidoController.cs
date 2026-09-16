@@ -51,5 +51,20 @@ namespace MatesPirru.Backend.Controllers
             var misPedidos = await _pedidoService.ObtenerPedidosPorUsuarioAsync(usuarioId);
             return Ok(misPedidos);
         }
+
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin")] // Candado exclusivo: solo los administradores pasan
+        public async Task<IActionResult> ObtenerPedidosAdmin()
+        {
+            try
+            {
+                var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync();
+                return Ok(todosLosPedidos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al obtener los pedidos.", detalle = ex.Message });
+            }
+        }
     }
 }

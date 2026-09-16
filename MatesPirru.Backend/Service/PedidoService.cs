@@ -74,5 +74,17 @@ namespace MatesPirru.Backend.Service
                 .OrderByDescending(p => p.Fecha) // Los más recientes primero
                 .ToListAsync();
         }
+
+        public async Task<List<Pedido>> ObtenerTodosLosPedidosAsync()
+        {
+            // Traemos todos los pedidos de la base de datos
+            return await _context.Pedidos
+                .Include(p => p.Usuario) // ¡Clave para tener el NombreApellido del cliente!
+                .Include(p => p.Detalles)
+                    .ThenInclude(d => d.Producto) // Incluimos los mates comprados por si querés hacer el "Ver Detalle" después
+                .OrderByDescending(p => p.Fecha) // Los más recientes primero
+                .ToListAsync();
+        }
+            
     }
 }
