@@ -1,4 +1,5 @@
 ﻿using MatesPirru.Backend.Data;
+using MatesPirru.Backend.DTOs;
 using MatesPirru.Backend.Models;
 using MatesPirru.Backend.Service;
 using Microsoft.EntityFrameworkCore;
@@ -113,6 +114,53 @@ namespace MatesPirru.Backend.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+        public async Task<RespuestaPaginada<Producto>> ObtenerPaginadosAsync(ProductoQueryParameters parametros)
+        {
+            // 1. Iniciamos la consulta (AsQueryable permite sumar filtros antes de tocar SQLite)
+            var query = _context.Productos
+                .Include(p => p.Categoria)
+                .Include(p => p.Imagenes)
+                .AsQueryable();
+
+            // 2. Aplicamos filtros dinámicos si el usuario los envió
+            if (parametros.Activo.HasValue)
+            {
+                query = query.Where(p => p.Activo == parametros.Activo.Value);
+            }
+
+            if (parametros.IdCategoria.HasValue)
+            {
+                query = query.Where(p => p.IdCategoria == parametros.IdCategoria.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(parametros.Buscar))
+            {
+                var busqueda = parametros.Buscar.ToLower();
+                query = query.Where(p => p.Nombre.ToLower().Contains(busqueda) ||
+                                         p.Modelo.ToLower().Contains(busqueda));
+            }
+
+            // 3. Contamos cuántos mates cumplen esta condición en total
+            int totalItems = await query.CountAsync();
+
+            // 4. Calculamos cuántas páginas se generan
+            int totalPaginas = (int)Math.Ceiling(totalItems / (double)parametros.Limite);
+
+            // 5. Aplicamos la paginación (Salteamos los anteriores y agarramos los de la página actual)
+            var items = await query
+                .Skip((parametros.Pagina - 1) * parametros.Limite)
+                .Take(parametros.Limite)
+                .ToListAsync();
+
+            // 6. Armamos y devolvemos el paquete final
+            return new RespuestaPaginada<Producto>
+            {
+                Items = items,
+                PaginaActual = parametros.Pagina,
+                TotalPaginas = totalPaginas,
+                TotalItems = totalItems
+            };
         }
     }
 }

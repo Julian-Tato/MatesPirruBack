@@ -1,8 +1,9 @@
-﻿using MatesPirru.Backend.Models;
+﻿using MatesPirru.Backend.DTOs;
+using MatesPirru.Backend.Models;
 using MatesPirru.Backend.Service;
 using MatesPirru.Backend.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MatesPirru.Backend.Controllers
 {
@@ -95,6 +96,17 @@ namespace MatesPirru.Backend.Controllers
             // Devuelve código 204 (No Content). 
             
             return NoContent();
+        }
+
+        [HttpGet("paginados")]
+        public async Task<IActionResult> GetProductosPaginados([FromQuery] ProductoQueryParameters parametros)
+        {
+            // Filtro de seguridad rápido para evitar que rompan la matemática con números negativos
+            if (parametros.Pagina < 1) parametros.Pagina = 1;
+            if (parametros.Limite < 1) parametros.Limite = 10;
+
+            var resultado = await _productoService.ObtenerPaginadosAsync(parametros);
+            return Ok(resultado);
         }
     }
 }

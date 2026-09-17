@@ -1,4 +1,5 @@
-﻿using MatesPirru.Backend.Models;
+﻿using MatesPirru.Backend.DTOs;
+using MatesPirru.Backend.Models;
 
 namespace MatesPirru.Backend.Service
 {
@@ -9,5 +10,6 @@ namespace MatesPirru.Backend.Service
         Task<Producto?> ObtenerPorIdAsync(int id);
         Task<Producto> ActualizarProductoAsync(int id, Producto productoModificado);
         Task<bool> EliminarProductoAsync(int id);
+        Task<RespuestaPaginada<Producto>> ObtenerPaginadosAsync(ProductoQueryParameters parametros);
     }
 }
