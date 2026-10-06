@@ -19,9 +19,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Generador de la API (Nativo de .NET 9)
 builder.Services.AddOpenApi();
 
-// Conectamos la base de datos SQLite
+// ==========================================
+// CONEXIÓN A AZURE SQL (Actualizado desde SQLite)
+// ==========================================
 builder.Services.AddDbContext<MatesPirru.Backend.Data.AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("ConexionSQL")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionSQL"), sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure();
+    }));
 
 // Inyección de dependencias de los servicios
 builder.Services.AddScoped<IProductoService, ProductoService>();
