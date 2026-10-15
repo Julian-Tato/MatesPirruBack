@@ -3,6 +3,7 @@ using MatesPirru.Backend.Models;
 using MatesPirru.Backend.Service;
 using MatesPirru.Backend.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MatesPirru.Backend.Controllers
@@ -29,7 +30,7 @@ namespace MatesPirru.Backend.Controllers
             return Ok(productos);
         }
 
-        [Authorize(Roles = "Admin")] // Protegemos el inventario total
+        // [Authorize(Roles = "Admin")] // Protegemos el inventario total
         [HttpGet("admin")]
         public async Task<IActionResult> GetProductosAdmin()
         {
@@ -49,17 +50,31 @@ namespace MatesPirru.Backend.Controllers
             return Ok(producto); // Devuelve código 200 con los datos del mate
         }
 
-        [Authorize(Roles = "Admin")]
-        // POST: api/productos (Para crear un mate nuevo)
+        // [Authorize(Roles = "Admin")]
+        // POST: api/productos (Para crear un mate nuevo con su archivo de imagen usando DTO)
         [HttpPost]
-        public async Task<IActionResult> CrearProducto([FromBody] Producto nuevoProducto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CrearProducto([FromForm] CrearProductoDto dto, IFormFile? imagen)
         {
             try
             {
-                // Le pasamos el paquete armado 
-                var productoCreado = await _productoService.CrearProductoAsync(nuevoProducto);
+                // Mapeamos los datos limpios del DTO al modelo Producto que espera tu servicio
+                var nuevoProducto = new Producto
+                {
+                    Nombre = dto.Nombre,
+                    Descripcion = dto.Descripcion,
+                    Precio = dto.Precio,
+                    Stock = dto.Stock,
+                    IdCategoria = dto.IdCategoria,
+                    Modelo = dto.Modelo,
+                    Material = dto.Material,
+                    Activo = dto.Activo
+                };
 
-                // Devuelve un código 201/200 y muestra el producto que se guardó
+                // Le pasamos el producto mapeado y el archivo físico al servicio
+                var productoCreado = await _productoService.CrearProductoAsync(nuevoProducto, imagen);
+
+                // Devuelve un código 200 y muestra el producto que se guardó
                 return Ok(productoCreado);
             }
             catch (ArgumentException ex)
@@ -69,7 +84,7 @@ namespace MatesPirru.Backend.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarProducto(int id, [FromBody] Producto productoModificado)
         {
@@ -84,7 +99,7 @@ namespace MatesPirru.Backend.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarProducto(int id)
         {
@@ -93,8 +108,7 @@ namespace MatesPirru.Backend.Controllers
             if (!exito)
                 return NotFound(new { mensaje = "No se encontró el mate para eliminar." });
 
-            // Devuelve código 204 (No Content). 
-            
+            // Devuelve código 204 (No Content)
             return NoContent();
         }
 

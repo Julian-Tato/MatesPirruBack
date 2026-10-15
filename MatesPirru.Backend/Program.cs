@@ -13,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Agregamos los recepcionistas (Controllers) y manejamos ciclos de referencias
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
+ 
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
@@ -71,7 +72,10 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseCors("PermitirReact");
 app.UseAuthentication();
 app.UseAuthorization();

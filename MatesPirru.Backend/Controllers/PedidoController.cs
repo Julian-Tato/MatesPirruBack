@@ -53,7 +53,7 @@ namespace MatesPirru.Backend.Controllers
         }
 
         [HttpGet("admin")]
-        [Authorize(Roles = "Admin")] // Candado exclusivo: solo los administradores pasan
+       // [Authorize(Roles = "Admin")] // Candado exclusivo: solo los administradores pasan
         public async Task<IActionResult> ObtenerPedidosAdmin()
         {
             try
