@@ -147,6 +147,7 @@ namespace MatesPirru.Backend.Controllers
         }
 
         // POST: api/usuarios/google-login
+        [AllowAnonymous]
         [HttpPost("google-login")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO googleData)
         {
